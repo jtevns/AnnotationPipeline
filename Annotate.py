@@ -1,13 +1,10 @@
 # A command line tool for running the annotation workflow
 # explained below:
-# 	We predicted proteins from all genomes using Prodigal, and subsequently identified
-#	protein orthologous groups (OGs) using proteinortho v5.16b with default parameters (56). For
-#	each OG we chose the longest member as a representative compared these proteins to the
-#	EggNOG release 4.5 (57), Pfam release 31 (58), and TigrFam release 15.0 (59) databases for
-#	annotation using HMMER3 (60). For EggNOG we downloaded all NOG hmms from the EggNOG
-#	website on February 1st, 2018, and ran hmmsearch with an e-value cutoff of 1e-5. For Pfam and
-#	TigrFam annotations we used the the noise cutoffs in each HMM as lower bounds for annotationi
-
+#	1. call genes with prodigal
+#	2. select orthologous clusters
+#	3. select longest member of cluster as
+#	       representative
+#	4. hmm search eggNOG, pfam,tigrfam
 import click
 
 @click.group()
