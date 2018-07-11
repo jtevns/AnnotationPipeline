@@ -29,9 +29,12 @@ def prodigal(fasta):
 @main.command()
 @click.argument('fnas',nargs=-1)
 @click.argument('project',nargs=1)
-def protienOrtho(fnas,project):
+def proteinOrtho(fnas,project):
         #../software/proteinortho_v5.16b/proteinortho5.pl -project=Sample_99669_DAStool_bin15 -clean Sample_99669_DAStool_bin15_genes.fna combined_lm_DAStool_bin41_genes.fna
-        subprocess.call(['../software/proteinortho_v5.16b/proteinortho5.pl','-project',project,'-clean'])
+    command = ['../software/proteinortho_v5.16b/proteinortho5.pl','-project='+str(project),'-clean']
+    for fna in fnas:
+        command.append(fna)
+    subprocess.call(command)
 
 @main.command()
 def selectLongest():
