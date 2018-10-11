@@ -10,3 +10,5 @@ To run:
  &nbsp;&nbsp;&nbsp;&nbsp;bins linked in the directory that meet the length threshold  
     -Run Annotation.smk  
     &nbsp;&nbsp;&nbsp;&nbsp; -snakemake -s Annotation.smk --cores   
+Note on headers:
+fasta headers cannot contain ":" 
