@@ -134,9 +134,9 @@ def makeOrthClusters(proteinClusters):
     outfile = open("ProteinOrthoClusters.tsv","w+")
     for line in clusters:
         if(line.startswith("#")):
-            header = line.split()[4:-1]
+            header = line.split()[4:]
         else:
-            clusterLine = line.split("\t")[3:-1]
+            clusterLine = line.split("\t")[3:]
             combinedClusterRow = list()
             for lineLoc in range(0,len(clusterLine)):
                 clusterRow = header[lineLoc] +":"+ clusterLine[lineLoc]
