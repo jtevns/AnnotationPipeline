@@ -142,7 +142,7 @@ def makeOrthClusters(proteinClusters):
                 clusterRow = header[lineLoc] +":"+ clusterLine[lineLoc]
                 if "*" not in clusterRow:
                     combinedClusterRow.append(clusterRow)
-            outfile.write(str(clusterCount)+ "\t" + "\t".join(combinedClusterRow) + "\n")
+            outfile.write(str(clusterCount)+ "\t" + "\t".join(combinedClusterRow))
             clusterCount += 1
     clusters.close()
     outfile.close()
