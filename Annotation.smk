@@ -94,6 +94,7 @@ def selectRepresentatives(faas,clusters):
         clusterNum = cluster.split("\t")[0]
         longestID = "unset"
         longestLen = 0
+        longestIDwNum = "unset"
         #lengths = [geneSizes[gene] for gene in cluster.split()]
         for gene in cluster.split("\t")[1:]:
             temp = gene.strip().split(":")
@@ -106,6 +107,7 @@ def selectRepresentatives(faas,clusters):
                     if currLen > longestLen:
                         longestID = currContig
                         longestLen = currLen
+                        longestIDwNum = currContig +"_cluster_"+str(clusterNum)
             else:
                 currContig = gene.strip()
                 currLen = geneSizes[currContig]
@@ -142,7 +144,7 @@ def makeOrthClusters(proteinClusters):
                 clusterRow = header[lineLoc] +":"+ clusterLine[lineLoc]
                 if "*" not in clusterRow:
                     combinedClusterRow.append(clusterRow)
-            outfile.write(str(clusterCount)+ "\t" + "\t".join(combinedClusterRow))
+            outfile.write(str(clusterCount) + "\t" + "\t".join(combinedClusterRow))
             clusterCount += 1
     clusters.close()
     outfile.close()
