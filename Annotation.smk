@@ -130,7 +130,7 @@ rule select_representatives:
         selectRepresentatives(input.faas,input.clus)
 
 #function to make cluster file
-def makeOrthClusters(proteinClusters):
+def makeOrthClusters(proteinClusters):    
     clusterCount = 0
     clusters = open(proteinClusters, 'r')
     outfile = open("ProteinOrthoClusters.tsv","w+")
@@ -139,12 +139,13 @@ def makeOrthClusters(proteinClusters):
             header = line.split()[4:]
         else:
             clusterLine = line.split("\t")[3:]
+            clusterLine[-1] = clusterLine[-1].strip()
             combinedClusterRow = list()
             for lineLoc in range(0,len(clusterLine)):
                 clusterRow = header[lineLoc] +":"+ clusterLine[lineLoc]
                 if "*" not in clusterRow:
                     combinedClusterRow.append(clusterRow)
-            outfile.write(str(clusterCount) + "\t" + "\t".join(combinedClusterRow))
+            outfile.write(str(clusterCount)+ "\t" + "\t".join(combinedClusterRow) + "\n")
             clusterCount += 1
     clusters.close()
     outfile.close()
