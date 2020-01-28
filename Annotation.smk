@@ -23,31 +23,6 @@ rule all:
         #"MappedToClusters_tigrfam_annotation.csv",
         #"MappedToClusters_eggnog_annotation.csv"
         
-#function to map to clusters
-
-def MapToClusters(clusters,annotation):
-    with open(clusters) as clusters:
-        clusterDict = {x.split("\t")[0]:x.split("\t")[1:] for x in clusters }
-
-    outFileName = "MappedToClusters_"+annotation[:-3]+"csv"
-
-    with open(annotation) as annotations, open(outFileName,"w+") as outFile:
-        for line in annotations:
-            if "#" not in line:
-                clusterNum = line.split(" ")[0].split("_cluster_")[1]
-                foundClust = clusterDict[clusterNum]
-                for geneList in foundClust:
-                    if len(geneList.split(",")) > 1:
-                        geneList = geneList.split(",")
-                        prefix = geneList[0].split(":")[0]
-                        genes =  [":".join([prefix,x]) for x in geneList[1:]]
-                        for gene in genes:
-                            outLine = ",".join([gene.strip()]+line.split()[1:])
-                            outFile.write(outLine + "\n")
-                    else:
-                        outLine = ",".join([geneList.strip()]+line.split()[1:])
-                        outFile.write(outLine+"\n")
-
 # map annotations to memebers of cluster
 rule map_to_clusters:
     input:
@@ -78,44 +53,6 @@ rule search_databases:
     shell:
         "hmmsearch -o pfamlog --cpu {threads} --cut_nc --tblout pfam_annotation.txt /nfs/vdenef-lab/Shared/Jacob/Databases/PFAM-A_hmm/Pfam-A.hmm {input}"
 
-# function for selecting representatives
-def selectRepresentatives(faas,clusters):
-    #make a dictoinary of gene sizes    
-    geneSizes = dict()    
-    geneSeqs = dict()    
-    for faa in faas:
-        for record in SeqIO.parse(faa,"fasta"):
-            geneSizes[basename(faa)+":"+record.id] = len(record.seq)
-            geneSeqs[basename(faa)+":"+record.id] = record.seq
-    #select the longest gene from each cluster
-    clusters = open(clusters,"r")
-    outFile = open("representatives.faa","w+")
-    for cluster in clusters:
-        clusterNum = cluster.split("\t")[0]
-        longestID = "unset"
-        longestLen = 0
-        longestIDwNum = "unset"
-        #lengths = [geneSizes[gene] for gene in cluster.split()]
-        for gene in cluster.split("\t")[1:]:
-            temp = gene.strip().split(":")
-            binID = temp[0]
-            if "," in temp[1]:
-                contigs = temp[1].split(",")
-                for contig in contigs:
-                    currContig = binID+":"+contig
-                    currLen = geneSizes[currContig]
-                    if currLen > longestLen:
-                        longestID = currContig
-                        longestLen = currLen
-                        longestIDwNum = currContig +"_cluster_"+str(clusterNum)
-            else:
-                currContig = gene.strip()
-                currLen = geneSizes[currContig]
-                if currLen > longestLen:
-                    longestID = currContig
-                    longestIDwNum = currContig +"_cluster_"+str(clusterNum)
-                    longestLen = currLen
-        SeqIO.write(SeqRecord(geneSeqs[longestID],id = longestIDwNum,description=""),outFile,'fasta')
 
 #select representatives
 rule select_representatives:
@@ -129,26 +66,6 @@ rule select_representatives:
     run:
         selectRepresentatives(input.faas,input.clus)
 
-#function to make cluster file
-def makeOrthClusters(proteinClusters):    
-    clusterCount = 0
-    clusters = open(proteinClusters, 'r')
-    outfile = open("ProteinOrthoClusters.tsv","w+")
-    for line in clusters:
-        if(line.startswith("#")):
-            header = line.split()[4:]
-        else:
-            clusterLine = line.split("\t")[3:]
-            clusterLine[-1] = clusterLine[-1].strip()
-            combinedClusterRow = list()
-            for lineLoc in range(0,len(clusterLine)):
-                clusterRow = header[lineLoc] +":"+ clusterLine[lineLoc]
-                if "*" not in clusterRow:
-                    combinedClusterRow.append(clusterRow)
-            outfile.write(str(clusterCount)+ "\t" + "\t".join(combinedClusterRow) + "\n")
-            clusterCount += 1
-    clusters.close()
-    outfile.close()
 # make cluster file from ortho
 rule gen_cluster_file:
      input:
