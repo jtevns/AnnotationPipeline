@@ -21,4 +21,4 @@ def MapToClusters(clusters,annotation):
                         outLine = ",".join([geneList.strip()]+line.split()[1:])
                         outFile.write(outLine+"\n")
 
-MapToClusters(sys.argv[1],sys.argv[2])
+MapToClusters(snakemake.input[0],snakemake.input[1])

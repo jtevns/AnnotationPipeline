@@ -1,10 +1,10 @@
 from Bio import SeqIO
-from Bio import SeqRecord
+from Bio.SeqRecord import SeqRecord
 from os.path import basename
 import sys
 
 # function for selecting representatives
-def selectRepresentatives(faas,clusters):
+def selectRepresentatives(clusters,faas):
     #make a dictoinary of gene sizes    
     geneSizes = dict()    
     geneSeqs = dict()    
@@ -42,4 +42,5 @@ def selectRepresentatives(faas,clusters):
                     longestLen = currLen
         SeqIO.write(SeqRecord(geneSeqs[longestID],id = longestIDwNum,description=""),outFile,'fasta')
 
-selectRepresentatives(sys.argv[1],sys.argv[2])
+
+selectRepresentatives(snakemake.input[0],snakemake.input[1:])

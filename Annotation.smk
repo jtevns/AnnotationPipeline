@@ -8,91 +8,98 @@
 #    - map back to all contigs in bins
 #    - generate gene count tables
 ##########################################################
-import os
+import glob
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
-from os.path import basename
+from os.path import basename 
 
-BINS = [x for x in os.listdir("./Bins")]
 
-# psuedo rule check if the final genetables are present
+WANTED_ANNOTATIONS = config["ANNOTATIONS"]
+BINS = [x for x in glob.glob("Passing_bins/*")]
+BIN_NAMES = [x.split("/")[-1].split(".")[0] for x in BINS]
+
+#rule All to indicate ending point
 rule all:
     input:
-        #final output files
-        "MappedToClusters_pfam_annotation.csv",
-        #"MappedToClusters_tigrfam_annotation.csv",
-        #"MappedToClusters_eggnog_annotation.csv"
-        
-# map annotations to memebers of cluster
-rule map_to_clusters:
-    input:
-        # original annotation tsvs
-        annotationPF = "pfam_annotation.txt",
-        cluster = "ProteinOrthoClusters.tsv"
-     #   "tigrfam_annotation.csv",
-    #    "eggnog_annotation.csv"
-    output:
-        # MappedToClusters annotation tsvs
-        "MappedToClusters_pfam_annotation.csv",
-  #      "MappedToClusters_tigrfam_annotation.csv",
- #       "MappedToClusters_eggnog_annotation.csv"
-    run:
-        MapToClusters(input.cluster,input.annotationPF)
+       ["MappedToClusters_{annotation}_annotation.csv".format(annotation=annotation) for annotation in WANTED_ANNOTATIONS]
 
-# search databases
-rule search_databases:
-    input:
-        #representative fasta
-        "representatives.faa"
-    output:
-        # original annotation tsvs
-        "pfam_annotation.txt",
-  #      "tigrfam_annotation.csv",
- #       "eggnog_annotation.csv"
-    threads:40
-    shell:
-        "hmmsearch -o pfamlog --cpu {threads} --cut_nc --tblout pfam_annotation.txt /nfs/vdenef-lab/Shared/Jacob/Databases/PFAM-A_hmm/Pfam-A.hmm {input}"
-
-
-#select representatives
-rule select_representatives:
-    input:
-         #cluster tsv
-        clus = "ProteinOrthoClusters.tsv",
-        faas = expand("Gene_Calls/{binName}.faa",binName=BINS)
-    output:
-        #representative fasta
-        "representatives.faa"
-    run:
-        selectRepresentatives(input.faas,input.clus)
-
-# make cluster file from ortho
-rule gen_cluster_file:
-     input:
-         "ProteinOrthoOut.proteinortho"
-     output: 
-         "ProteinOrthoClusters.tsv"
-     run:
-         makeOrthClusters(input[0])
-
-# cluster genes from all gene calls
-rule cluster_genes:
-    input:
-        expand("Gene_Calls/{binName}.faa",binName=BINS)
-    output:
-        "ProteinOrthoOut.proteinortho"
-    shell:
-        """
-        perl /nfs/vdenef-lab/Shared/Jacob/software/proteinortho_v5.16b/proteinortho5.pl -project=ProteinOrthoOut -clean {input}
-        """
-#call genes from all bins
+#call genes from all bins with prodigal
 rule call_genes:
     input:
-        "Bins/{binName}"
+        "Passing_bins/{binName}." + config["INPUT_EXT"]
     output:
         faa="Gene_Calls/{binName}.faa",
         gbk="Gene_Calls/{binName}.gbk"
     shell:
-        " prodigal -a {output.faa} -i {input} -o {output.gbk} -q "
+        "prodigal -a {output.faa} -i {input} -o {output.gbk} -q "
 
-#filtering step 
+# cluster genes from all gene calls with proteinortho
+rule cluster_genes:
+    input:
+        expand("Gene_Calls/{binName}.faa",binName=BIN_NAMES)
+    output:
+        "annotation.proteinortho.tsv"
+    shell:
+        """
+        proteinortho -project="annotation" -clean {input}
+        #mv Protein_Ortho_Out.* Protein_Ortho_Out
+        """
+
+# make cluster file from proteinortho output with make_cluster_file.py
+rule gen_cluster_file:
+     input:
+         "annotation.proteinortho.tsv"
+     output: 
+         "ProteinOrthoClusters_reformatted.tsv"
+     script:
+         "scripts/make_cluster_file.py"
+
+#select representatives
+rule select_representatives:
+    input:
+        clus = "ProteinOrthoClusters_reformatted.tsv",
+        faas = expand("Gene_Calls/{binName}.faa",binName=BIN_NAMES)
+    output:
+        "representatives.faa"
+    script:
+        "scripts/select_representatives.py"
+
+rule search_pfam:
+    input:
+        reps = "representatives.faa",
+        db = config["DATABASE_DIRS"]["pfam"]
+    output:
+        "pfam_annotation.txt"
+    threads:36
+    shell:
+        "hmmsearch -o pfam.log --cpu {threads} --cut_nc --tblout pfam_annotation.txt {input.db} {input.reps}"
+
+rule search_tigrfam:
+    input:
+        reps = "representatives.faa",
+        db = config["DATABASE_DIRS"]["pfam"]
+    output:
+        "tigrfam_annotation.txt"
+    threads:36
+    shell:
+        "hmmsearch -o tigrfam.log --cpu {threads} --cut_nc --tblout tigrfam_annotation.txt {input.db} {input.reps}"
+
+rule search_eggnog:
+    input:
+        reps = "representatives.faa",
+        db = config["DATABASE_DIRS"]["pfam"]
+    output:
+        "eggnog_annotation.txt"
+    threads:36
+    shell:
+        "hmmsearch -o eggnog.log --cpu {threads} --cut_nc --tblout eggnog_annotation.txt {input.db} {input.reps}"
+
+# map annotations to members of cluster
+rule map_to_clusters:
+    input:
+        cluster = "ProteinOrthoClusters_reformatted.tsv",
+        file = "{annotation}_annotation.txt"
+    output:
+        "MappedToClusters_{annotation}_annotation.csv"
+    script:
+        "scripts/map_to_clusters.py"

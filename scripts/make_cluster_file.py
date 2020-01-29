@@ -4,7 +4,7 @@ import sys
 def makeOrthClusters(proteinClusters):    
     clusterCount = 0
     clusters = open(proteinClusters, 'r')
-    outfile = open("ProteinOrthoClusters.tsv","w+")
+    outfile = open("ProteinOrthoClusters_reformatted.tsv","w+")
     for line in clusters:
         if(line.startswith("#")):
             header = line.split()[4:]
@@ -21,4 +21,4 @@ def makeOrthClusters(proteinClusters):
     clusters.close()
     outfile.close()
 
-makeOrthClusters(sys.argv[1])
+makeOrthClusters(snakemake.input[0])

@@ -1,0 +1,12 @@
+ORIGINAL_BINS_DIR: ""
+INPUT_EXT: "fna"
+DATABASE_DIRS:
+    pfam: "databases/Pfam-A.hmm"
+    eggnog: ""
+    tigrfam: ""
+
+# put the ones you want in brackets.
+# can include any combination of 
+# pfam, tigrfam, and eggnog
+ANNOTATIONS: ["pfam"]
+
