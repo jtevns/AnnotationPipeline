@@ -1,5 +1,3 @@
-#!/usr/bin/env conda run -n base python
-
 # code used to preprocess the bins and create the directory structure 
 # for output
 
