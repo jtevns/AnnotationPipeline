@@ -28,8 +28,6 @@ MIN_LEN = 20000
 # make directories
 os.makedirs("Passing_Bins")
 os.makedirs("Gene_Calls")
-os.makedirs("Protein_Ortho_Out")
-os.makedirs("Annotation_Results")
 
 passing_bins_dir = "Passing_Bins/"
 
