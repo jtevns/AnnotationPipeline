@@ -6,7 +6,6 @@
 #    -Gene_calls
 #    -Protein_ortho_out
 #    -Annotation_results
-
 import os
 import sys
 from Bio import SeqIO
