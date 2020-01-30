@@ -1,3 +1,5 @@
+#!/usr/bin/env conda run -n base python
+
 # code used to preprocess the bins and create the directory structure 
 # for output
 
@@ -6,7 +8,6 @@
 #    -Gene_calls
 #    -Protein_ortho_out
 #    -Annotation_results
-
 import os
 import sys
 from Bio import SeqIO
