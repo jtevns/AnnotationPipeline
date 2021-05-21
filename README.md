@@ -4,6 +4,7 @@ An annotation pipeline using snakemake that curently supports pfam, eggnog, tigr
 To run:  
     -Create a directory for annotation  
     -Create a folder and put your original fasta files in
+    - module load python3.7-anaconda
     -Run filtering script on a directory of bins  
  &nbsp;&nbsp;&nbsp;&nbsp;-This is required to filter out bins that do not meet the length requirement for running prodigal (20000 bases and prep the directory for the pipeline)   
  &nbsp;&nbsp;&nbsp;&nbsp;- Run: ```/nfs/turbo/lsa-dudelabs/pipelines/AnnotationPipeline/scripts/prep_annotation.py folder_of_fastas```  
